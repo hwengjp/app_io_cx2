@@ -1,0 +1,10 @@
+# 非公開設定ファイル
+Common/config_private.h
+
+# ローカル専用メモ（パス・実機シリアルなど。Git にコミットしない）
+LOCAL_PRIVATE_NOTES.md
+
+# バックアップファイル
+*.BAK
+**/*.BAK
+

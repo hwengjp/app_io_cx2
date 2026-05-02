@@ -1,0 +1,95 @@
+/* Copyright (C) 2024 Mono Wireless Inc. All Rights Reserved.
+ * Released under MW-SLA-*J,*E (MONO WIRELESS SOFTWARE LICENSE
+ * AGREEMENT).
+ *
+ * このファイルは設定値のテンプレートです。
+ * 実際の設定値は config_private.h に定義してください。
+ * config_private.h は Git にチェックインされません。
+ */
+
+#ifndef CONFIG_PRIVATE_H_INCLUDED
+#define CONFIG_PRIVATE_H_INCLUDED
+
+/****************************************************************************/
+/***        EI1, EI2 ピンによるチャネル設定の割り当て                    ***/
+/****************************************************************************/
+
+/* EI1, EI2 ピンの組み合わせによるチャネル設定
+ * 設定値 0: デフォルト/フラッシュ値
+ * 設定値 1: CHANNEL_1 を使用
+ * 設定値 2: CHANNEL_2 を使用
+ * 設定値 3: CHANNEL_3 を使用
+ * 
+ * 注意: CHANNEL_DEFAULT と CONFIG_DEFAULT_CHANNEL は同じ値を使用します。
+ * - CHANNEL_DEFAULT: EI1/EI2ピンによるハードウェア設定で使用（EI1=O, EI2=O の場合）
+ * - CONFIG_DEFAULT_CHANNEL: インタラクティブモード/フラッシュメモリのデフォルト値として使用（CHANNEL_DEFAULTと同じ値）
+ * 
+ * 警告: 以下の値はメーカーのデフォルト値です。このドキュメントでは推奨していません。
+ * 標準アプリでよく使用されるチャネルと重複する可能性があるため、他のチャネルを選択することを推奨します。
+ */
+#define CHANNEL_DEFAULT  16  //!< ハードウェア設定用デフォルトチャネル（EI1=O, EI2=O で使用、au32ChMask_Preset[0]に格納、メーカーデフォルト）
+#define CHANNEL_1        12  //!< EI1=G, EI2=O で使用されるチャネル（設定値1、メーカーデフォルト）
+#define CHANNEL_2        21  //!< EI1=O, EI2=G で使用されるチャネル（設定値2、メーカーデフォルト）
+#define CHANNEL_3        25  //!< EI1=G, EI2=G で使用されるチャネル（設定値3、メーカーデフォルト）
+
+/* チャネルマスク（ビットマスク形式） */
+#define CHMASK           ((1UL << CHANNEL_DEFAULT))  //!< デフォルトチャネルマスク（ハードウェア設定用）
+#define CHMASK_1         ((1UL << CHANNEL_1))         //!< チャネル1のマスク
+#define CHMASK_2         ((1UL << CHANNEL_2))         //!< チャネル2のマスク
+#define CHMASK_3         ((1UL << CHANNEL_3))         //!< チャネル3のマスク
+
+/****************************************************************************/
+/***        デフォルト設定値                                            ***/
+/****************************************************************************/
+
+/* アプリケーションID（32bit） */
+#define CONFIG_DEFAULT_APPID           0x67726301UL  //!< デフォルトのアプリケーションID
+
+/* 論理デバイスID
+ * 子機（連射）では M2/M3 で 1～4 が決まり、本値・フラッシュの論理IDは実質未使用。README「フラッシュ／config_private.h にある論理IDについて（子機）」参照。
+ * 親機は論理ID 0 固定のため本項目は効かない。 */
+#define CONFIG_DEFAULT_LOGICALID       1             //!< デフォルトの論理デバイスID
+
+/* チャネル設定 */
+/* 注意: CONFIG_DEFAULT_CHANNEL は CHANNEL_DEFAULT と同じ値を使用します。
+ * - CONFIG_DEFAULT_CHANNEL: インタラクティブモード/フラッシュメモリのデフォルト値（twesettings_std_defsets.cで使用）
+ * - CHANNEL_DEFAULT: EI1/EI2ピンによるハードウェア設定用（au32ChMask_Preset[0]で使用）
+ * 
+ * 警告: 以下の値はメーカーのデフォルト値です。このドキュメントでは推奨していません。
+ * 標準アプリでよく使用されるチャネルと重複する可能性があるため、他のチャネルを選択することを推奨します。
+ */
+#define CONFIG_DEFAULT_CHANNEL         CHANNEL_DEFAULT  //!< ソフトウェア設定用デフォルトチャネル（インタラクティブモード/フラッシュメモリのデフォルト値、CHANNEL_DEFAULTと同じ値、メーカーデフォルト）
+#define CONFIG_DEFAULT_CHANNELS_3      ((1UL << CHANNEL_DEFAULT) >> 11)  //!< デフォルトのチャネル（複数可、CHANNEL_DEFAULTから計算、メーカーデフォルト）
+
+/* 送信出力と再送回数（XY形式: X=再送回数, Y=出力レベル） */
+#define CONFIG_DEFAULT_POWER_N_RETRY   0x42          //!< デフォルト: 再送4回, 出力レベル2（中）
+
+/* UARTボーレート（実際のボーレートを100で割った値） */
+#define CONFIG_DEFAULT_UARTBAUD        1152         //!< デフォルト: 115200 bps
+
+/* 子機連続0.03秒モード(3)のサイクル（FPS: 毎秒送信回数） */
+#define CONFIG_DEFAULT_FPS             16            //!< デフォルト: 16Hz（4,8,16,32のいずれか）
+
+/* 低レイテンシ連射機能: 非連射モード時の送信周期[ms] */
+#define CONFIG_IDLE_TX_INTERVAL_MS     200           //!< 非連射モードで現在I/Oを送る周期
+
+/* 低レイテンシ連射機能: 連射トリガ対象DIマスク(LSB=DI1) */
+#define CONFIG_BURST_IRQ_ENABLE_MASK   0x0003        //!< DI1/DI2のみを連射トリガ対象にする
+/* 低レイテンシ連射機能: 入力ソース選択 (1=DI1, 2=DI2) */
+#define CONFIG_BURST_INPUT_SOURCE      2             //!< 割り込みは選択した信号のH->Lで検出
+
+/* 子機フェイルセーフ: 親機からの最終受信から固定値に切り替える時間[ms] */
+#define CONFIG_CHILD_RX_TIMEOUT_MS      5000          //!< デフォルト: 5秒
+
+/* 子機フェイルセーフ: タイムアウト時のDO固定値(LSB=DO0, 1=Lo, 0=Hi) */
+#define CONFIG_CHILD_RX_TIMEOUT_DO_MASK 0xFFFC        //!< デフォルト: DO0/DO1=0, それ以外=1
+
+/* 暗号化設定 */
+#define CONFIG_DEFAULT_ENCENABLE       0             //!< デフォルト: 暗号化を無効化（0:無効, 1:有効）
+#define CONFIG_DEFAULT_ENCKEY          "\0           "  //!< デフォルト: 暗号鍵（15文字、空文字列）
+
+/* オプションビット（32bit） */
+#define CONFIG_DEFAULT_OPTBITS         0x00000000UL  //!< デフォルト: オプションなし
+
+#endif  /* CONFIG_PRIVATE_H_INCLUDED */
+
